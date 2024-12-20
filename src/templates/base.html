@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ title }} - {{ config.site_title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <img class="avatar" src="/images/avatar.jpg" alt="avatar" />
+    <div>
+      <h1>{{ config.site_title }}</h1>
+      <p>{{ config.subtitle }}</p>
+    </div>
+    <div class="social">
+      <a href="https://github.com/nchatharoo" target="_blank">🐙</a>
+      <a href="https://www.linkedin.com/in/nchatharoo" target="_blank">💼</a>
+      <a href="https://twitter.com/NadheerC" target="_blank">🐦</a>
+    </div>
+  </div>
+</header>
+<main>
+  {% block body %}
+  {% if body is defined %}
+      {{ body | safe }}
+  {% else %}
+      <p>Aucun contenu disponible.</p>
+  {% endif %}
+  {% endblock body %}
+</main>
+<footer>
+  <p>© {{ year }} - Fais avec Rust</p>
+</footer>
+</body>
+</html>
