@@ -19,7 +19,9 @@ Lors de l'utilisation de @StateObject, SwiftUI créera l'objet une seule fois. M
 
 Dans le code ci-dessus, lorsque l'utilisateur appuie sur le bouton, tous les éléments changent de couleur. L'objet Counter est créé une fois, et garde sa valeur peu importe le nombre de fois où la couleur est changée (re-rendue). Lorsque notre vue est propriétaire de l'objet (c'est-à-dire qu'elle le crée), nous devons utiliser @StateObject.
 
-![](/images/AJ6v5gz9oTI1msRKB4y8MgWjD6E.mp4)
+<video src="/images/AJ6v5gz9oTI1msRKB4y8MgWjD6E.mp4" controls>
+  Votre navigateur ne supporte pas la vidéo HTML5.
+</video>
 
 ## @ObservedObject
 
@@ -29,7 +31,9 @@ Au contraire, lors de l'instanciation d'un @ObservedObject, l'objet sera re-rend
 
 Nous pouvons voir que le Counter est réinitialisé à 0 à chaque tapotement, car ContentView ne possède pas StateStepper ou Counter, elle ne connaît pas leur état, donc ils sont re-rendus.
 
-![](/images/YbpAvlH9PUXcAdGsu8g2ftCgPaE.mp4)
+<video src="/images/YbpAvlH9PUXcAdGsu8g2ftCgPaE.mp4" controls>
+  Votre navigateur ne supporte pas la vidéo HTML5.
+</video>
 
 ## @EnvironmentObject
 

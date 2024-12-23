@@ -25,7 +25,7 @@ fn main() -> std::io::Result<()> {
         let mut c = tera::Context::new();
         c.insert("config", &serde_json::json!({
             "site_title": "Nadheer Chatharoo",
-            "subtitle": "Développement iOS, SwiftUI et plus..."
+            "subtitle": "Développement iOS et plus..."
         }));
         c
     };
@@ -52,12 +52,12 @@ fn main() -> std::io::Result<()> {
 
     let mut posts = vec![];
     for entry in WalkDir::new("content/posts").into_iter().filter_map(|e| e.ok()) {
-        println!("Fichier trouvé : {:?}", entry.path());
+        //println!("Fichier trouvé : {:?}", entry.path());
         if entry.file_type().is_file() && entry.path().extension().and_then(|ext| ext.to_str()) == Some("md") {
             let markdown = fs::read_to_string(entry.path())?;
-            println!("Lecture du fichier : {:?}", entry.path());
+            //println!("Lecture du fichier : {:?}", entry.path());
             if let Some((frontmatter_str, body)) = split_frontmatter(&markdown) {
-                println!("Frontmatter détecté pour : {:?}", entry.path());
+                //println!("Frontmatter détecté pour : {:?}", entry.path());
                 let fm: FrontMatter = serde_yml::from_str(&frontmatter_str).expect("Frontmatter invalide");
     
                 let slug = entry.path().file_stem().unwrap().to_str().unwrap().to_string();
@@ -148,7 +148,7 @@ fn copy_dir_all(src: &str, dst: &str) -> std::io::Result<()> {
             copy_dir_all(&entry.path().to_string_lossy(), &dest_path)?;
         } else {
             if file_name == "style.css" {
-                println!("Copie de : {}", file_name);
+                //println!("Copie de : {}", file_name);
             }
             fs::copy(entry.path(), dest_path)?;
         }
