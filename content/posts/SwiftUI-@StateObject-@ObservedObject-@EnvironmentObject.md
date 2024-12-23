@@ -29,7 +29,7 @@ Au contraire, lors de l'instanciation d'un @ObservedObject, l'objet sera re-rend
 
 Nous pouvons voir que le Counter est réinitialisé à 0 à chaque tapotement, car ContentView ne possède pas StateStepper ou Counter, elle ne connaît pas leur état, donc ils sont re-rendus.
 
-![](images/YbpAvlH9PUXcAdGsu8g2ftCgPaE.mp4)
+![](/images/YbpAvlH9PUXcAdGsu8g2ftCgPaE.mp4)
 
 ## @EnvironmentObject
 
