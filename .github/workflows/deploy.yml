@@ -17,6 +17,8 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
+      - name: Create CNAME file
+        run: echo "nchatharoo.github.io" > ./public/CNAME
 
       - name: Build
         run: cargo run --release
@@ -24,6 +26,6 @@ jobs:
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Token GitHub pour publier
-          publish_dir: ./public                    # Répertoire à publier
-          publish_branch: gh-pages                 # Branche de destination
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
