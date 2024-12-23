@@ -100,9 +100,10 @@ img {
 }
 
 .post-header img {
-  max-width: 100%;
-  height: auto;
+  width: 100%;
+  height: 300px;
   border-radius: 8px;
+  object-fit: cover;
 }
 
 .post-body img {
