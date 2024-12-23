@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Grand Central Dispatch (GCD) - Nadheer Chatharoo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <img class="avatar" src="/images/avatar.jpg" alt="avatar" />
+    <div>
+      <h1>Nadheer Chatharoo</h1>
+      <p>Développement iOS et plus...</p>
+    </div>
+    <div class="social">
+      <a href="https://github.com/nchatharoo" target="_blank">🐙</a>
+      <a href="https://www.linkedin.com/in/nchatharoo" target="_blank">💼</a>
+      <a href="https://twitter.com/NadheerC" target="_blank">🐦</a>
+    </div>
+  </div>
+</header>
+<main>
+  
+<article class="post-full">
+  <div class="post-header">
+    <h1>Grand Central Dispatch (GCD)</h1>
+    <img src="&#x2F;images&#x2F;cover_gcd2.jpg" alt="Grand Central Dispatch (GCD)">
+  </div>
+  <div class="post-body">
+    <h2>Part 2 : DispatchGroup, DispatchSemaphore</h2>
+<p>So we've seen how to use GCD with one task, but how to deal with multiple tasks ? This is where DispatchGroup is useful.</p>
+<h3>DispatchGroup</h3>
+<p>We start by initializing a <code>DispatchGroup</code>, then provide it as an argument to the <code>async</code> method of our dispatch queue.</p>
+<p>For example :</p>
+<pre><code class="language-swift">let dispatchGroup = DispatchGroup()
+someQueue.async(group: group) { /* some work */ }
+someQueue.async(group: group) { /* some other work */ }
+someOtherQueue.async(group: group) { /* another work */ }
+</code></pre>
+<p>We can see that <code>dispatchGroup</code> is not attached to a single dispatch. That mean we can submit multiple tasks to multiples queues.</p>
+<p>When all tasks are done, <code>DispatchGroup</code> will notify us.</p>
+<pre><code class="language-swift">dispatchGroup.notify(queue: DispatchQueue.main) { [weak self ] in 
+	print("Tasks completed !")
+}
+</code></pre>
+<p>Note that <code>notify</code> take a dispatch queue as a parameter, that mean the closure will be executed in the specified one.</p>
+<p>Let's see a more concrete example, for each task, we <code>enter</code> the group, and <code>leave</code> it for each completed task.</p>
+<pre><code class="language-swift">import UIKit
+class ViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let dispatchGroup = DispatchGroup() //Create a group for the tasks.
+        let session: URLSession = URLSession.shared
+      
+        dispatchGroup.enter() //Enter the group
+        let firstTask = session.dataTask(with: URLRequest(url: URL(string:
+"a url")!)) { (data, response, error) in
+            //Process Response..
+            dispatchGroup.leave() //Leave the group 
+        }
+      
+        dispatchGroup.enter()  //Enter the group
+        let secondTask = session.dataTask(with: URLRequest(url: URL(string: "another url")!))
+{ (data, response, error) in
+            //Process Response..
+            dispatchGroup.leave()  //Leave the group
+        }
+      
+        //When all of the tasks listed above have been done, we get a notification on the Main Thread.
+        dispatchGroup.notify(queue: DispatchQueue.main) {
+        	print("Every task is complete")
+        }
+      
+        //Resume the tasks.
+        firstTask.resume()
+        secondTask.resume()
+    }
+}
+</code></pre>
+<p>See how we use the <code>enter</code> and <code>leave</code>, if we forgot to leave after entering, the app will hang forever !</p>
+<h3>DispatchSemaphore</h3>
+<p>Ok, we can work with multiple tasks, but imagine that we need to prevent tasks to access the same shared resource, like a read/write a file ? Or limit how many downloads can happen at once ? Using DispatchSemaphore can help us with that.</p>
+<p>For example :</p>
+<pre><code class="language-swift">
+func twoTasksAtSameTime() {
+    print("starting long running tasks (2 at a time)")
+    
+    let sem = DispatchSemaphore(value: 2) // this semaphore only allows 2 tasks to run at the same time (the resource count)
+    for _ in 0...7 { // launch a bunch of tasks
+        DispatchQueue.global().async { // run tasks on a background thread
+            sem.wait() // wait here if no resources available
+          	defer { sem.signal() } // let the semaphore know this resource is now available
+            sleep(2) // simulate long task
+            print("starting long running tasks (2 at a time)")
+        }
+    }
+}
+</code></pre>
+<p>Here, the app will loop in our <code>for</code> statement 7 times, and during the loop, will wait 2 seconds before running again.</p>
+
+  </div>
+</article>
+
+</main>
+<footer>
+  <p>© 2024 - Fais avec Rust</p>
+</footer>
+</body>
+</html>

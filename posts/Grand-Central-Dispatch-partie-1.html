@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Grand Central Dispatch (GCD) - Nadheer Chatharoo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <img class="avatar" src="/images/avatar.jpg" alt="avatar" />
+    <div>
+      <h1>Nadheer Chatharoo</h1>
+      <p>Développement iOS et plus...</p>
+    </div>
+    <div class="social">
+      <a href="https://github.com/nchatharoo" target="_blank">🐙</a>
+      <a href="https://www.linkedin.com/in/nchatharoo" target="_blank">💼</a>
+      <a href="https://twitter.com/NadheerC" target="_blank">🐦</a>
+    </div>
+  </div>
+</header>
+<main>
+  
+<article class="post-full">
+  <div class="post-header">
+    <h1>Grand Central Dispatch (GCD)</h1>
+    <img src="&#x2F;images&#x2F;cover_gcd1.jpg" alt="Grand Central Dispatch (GCD)">
+  </div>
+  <div class="post-body">
+    <h2>Part 1 : Sync vs Async, Serial vs Concurrent, Main Queues vs Global Queues</h2>
+<p>Concurrency on iOS is a large topic, today let's focus on Grand Central Dispatch (GCD).</p>
+<p>GCD is Apple’s implementation of C’s <strong>libdispatch</strong> library, it allow us to write multi-threaded code without manually creating the threads themselves. We do not need to worry about managing them, because
+GCD's tasks (either a method or a closure) are placed into GCD-managed <strong>first-in, first-out</strong> (FIFO) queues fully handled by the system.</p>
+<blockquote>
+<p>We place tasks in queues, GCD will place these queues in a pool, and will execute them in a FIFO based procedure BUT the tasks we submit <strong>does not finish in the order</strong> we submit them. The FIFO procedure applies when the task <em>starts</em>, thats because the completion of the tasks depends on several factors.</p>
+</blockquote>
+<p>Tasks can run synchronously or asynchronously :</p>
+<ul>
+<li>Synchronous tasks : the app will wait and block the current run loop until execution finishes.</li>
+<li>Asynchronous tasks : will start and return execution the app immediately.</li>
+</ul>
+<p>When we need to perform long task (like networking call or computationally expensive work), we :
+-create a queue
+-attach a task to it to run asynchronously on a background thread
+-delegate the code back to the main thread, when the task is completed.</p>
+<p>For example :</p>
+<pre><code class="language-swift">  let queue = DispatchQueue(label: "com.nchatharoo.work") // Create it in init()
+	// Later in a function
+  queue.async { _ in
+      DispatchQueue.main.async { // UI related work
+          // Update UI here
+      }
+  }
+</code></pre>
+<h3>Serial vs Concurrent queue</h3>
+<p><u>Serial</u> : Serial queue only have a single thread associated with them and will complete each task in the order they are submitted to the queue. When creating a queue, it is serial by default.</p>
+<p><u>Concurrent</u> : Each task runs as soon as possible without waiting for other tasks in the queue. The advantage is that the concurrent queue time is shorter than the serial queue because all the tasks in the queue are executed simultaneously in separate threads.</p>
+<p>Use a concurrent queue if the order of execution is not important.</p>
+<blockquote>
+<p>Even if we tell iOS that we want to use a concurrent queue, keep in mind that there is no <em>guarantee</em> that more than one task will run at a time. If the app is struggling for resources, it may only be able to perform one task at a time.</p>
+</blockquote>
+<p>There is 3 kind of queues available for in our app :</p>
+<ul>
+<li>The Main dispatch queue (serial)</li>
+<li>Global (Background) queues (concurrent)</li>
+<li>Private queues (serial or concurrent)</li>
+</ul>
+<h5><strong>The Main dispatch queue</strong></h5>
+<p>It's created automatically when the app start, it's a serial queue, all the UI updates take place in here and the code involving UI changes are placed.
+As it is heavily used, Apple has provided us the <em>DispatchQueue.main</em> to access it.</p>
+<pre><code class="language-Swift">DispatchQueue.main.async { // Asynchronous Main Queue call
+  // Will not block the UI
+}
+</code></pre>
+<p>The code inside the <code>{ }</code> won't block the UI, since its executed in a Background thread.</p>
+<p>Be aware calling <em>DispatchQueue.main.sync</em> can lead to <strong>deadlock</strong> (Main Queue waiting for itself), that's because the calling queue will wait until the work we dispatch in the block is finished.</p>
+<p>So when to use <code>sync</code> ? If you are submitting a tiny task (for example, updating a value), consider doing it synchronously. For example :</p>
+<pre><code class="language-swift">DispatchQueue.global().async { // Asynchronous Background thread call
+// Here we do something
+	DispatchQueue.main.sync { // Synchronous Main Queue call
+    // Update UI
+  }
+// This part will execute after 'Update UI' has finished
+}
+</code></pre>
+<p><code>DispatchQueue.global().async</code> will perform using a Background Thread  and when task inside the block finish, <code>DispatchQueue.main.sync</code> will bring the work from Background Queue to the Main Queue, which will update the UI.</p>
+<h5>The Global (Background) queues</h5>
+<p>Global queues are always concurrent and first-in, first-out. Apple have provided 6 different global queues, they differ by the <em>Quality of service (QoS)</em> the queue should have.</p>
+<p>We create a global queue with QoS like this :</p>
+<pre><code class="language-swift">let queue = DispatchQueue.global(qos: .userInteractive)
+</code></pre>
+<p>We can also give a <em>default priority</em> like this :</p>
+<pre><code class="language-swift">let queue = DispatchQueue.global() // default QoS falls somewhere between *user initiated* and *utility*
+</code></pre>
+<p>To add task to a global queue we can write this :</p>
+<pre><code class="language-swift">DispatchQueue.global(qos: .utility).async { [weak self] in
+  guard let self = self else { return }
+  // Perform work here
+  DispatchQueue.main.async {   // Switch back to the main queue to update your UI
+    self.label.text = "New text here"
+  	}
+  }
+</code></pre>
+<p>Task refer to any block of code using the <code>sync</code> or <code>async</code> functions.</p>
+<h5>Private queues</h5>
+<p>Finally, we can create our own private( or custom) queue. By default, private queues are <em>serial</em>.
+Here is how we can create it :</p>
+<pre><code class="language-swift">let concurrent = DispatchQueue(label: "com.nchatharoo.concurrent-queue", qos: .userInitiated, attributes: .concurrent)
+concurrent.sync {
+    print("Private concurrent queue")
+}
+</code></pre>
+<p>As we can see, we can also precise what the QoS is but be aware, it is not guaranteed that it's gonna stay that way !
+In fact the OS will eventually change the QoS based on the type of task submitted to the queue and perform change as necessary.</p>
+
+  </div>
+</article>
+
+</main>
+<footer>
+  <p>© 2024 - Fais avec Rust</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>MVVM - Nadheer Chatharoo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <img class="avatar" src="/images/avatar.jpg" alt="avatar" />
+    <div>
+      <h1>Nadheer Chatharoo</h1>
+      <p>Développement iOS et plus...</p>
+    </div>
+    <div class="social">
+      <a href="https://github.com/nchatharoo" target="_blank">🐙</a>
+      <a href="https://www.linkedin.com/in/nchatharoo" target="_blank">💼</a>
+      <a href="https://twitter.com/NadheerC" target="_blank">🐦</a>
+    </div>
+  </div>
+</header>
+<main>
+  
+<article class="post-full">
+  <div class="post-header">
+    <h1>MVVM</h1>
+    <img src="&#x2F;images&#x2F;cover_mvvm.jpg" alt="MVVM">
+  </div>
+  <div class="post-body">
+    <h2>Un modèle de conception d'interface utilisateur</h2>
+<p>MVVM est un modèle architectural d'interface utilisateur, et signifie Model-View-ViewModel. MVVM est une variante du MVC créée par Microsoft, qui vise à minimiser le code standard nécessaire pour synchroniser les événements de la Vue et les mises à jour du Modèle que gèrent les Contrôleurs.</p>
+<p>Grâce à un composant ViewModel, la solution MVVM de Microsoft connecte de manière transparente les événements de la Vue avec les mises à jour du Modèle.</p>
+<p>Les développeurs déclarent les liaisons du ViewModel avec les déclarations de la Vue en XAML, et le framework gère automatiquement les liaisons à l'exécution, selon le système graphique .NET de Microsoft.</p>
+<p>Comme la plupart des plateformes n'offrent pas le câblage automatique que propose le système graphique .NET, MVVM est souvent connu sous le nom de Model-View-Binder en dehors des systèmes Microsoft.</p>
+<p>Dans UIKit, par exemple, il n'y a pas de mécanisme pour connecter automatiquement un ViewModel à une Vue, donc le développeur doit implémenter les composants Binder. Il est courant d'utiliser des frameworks comme RxSwift ou Combine (ou des closures !) pour faciliter les connexions entre la Vue et le ViewModel.</p>
+<h2>Comparaison entre MVC et MVVM :</h2>
+<p><img src="/images/2021-12-29-MVC-MVVM.png" alt="MVC-MVVM" /></p>
+<p>La seule différence entre les structures MVC et MVVM est qu'un ViewModel ne contient pas de référence à la Vue comme le fait le Contrôleur dans MVC.</p>
+<p>Pour rendre à la fois la Vue et le ViewModel plus réutilisables, ils ne devraient pas dépendre directement l'un de l'autre. Ils devraient pouvoir communiquer de manière indirecte grâce à un mécanisme de liaison.</p>
+<p>Les UIViewController sont des candidats idéaux pour agir comme Binders dans UIKit, reliant la Vue au ViewModel. C'est parce que pour afficher des vues à l'écran dans UIKit, votre application doit avoir au moins un UIViewController.</p>
+<p>Comme les UIViewController ont déjà une référence à leurs Vues correspondantes, ils sont un excellent endroit pour injecter et lier le ViewModel avec la Vue.</p>
+<p><img src="/images/2021-12-29-MVVM-Binder.png" alt="MVVM-Binder" /></p>
+<p>Cependant, dans UIKit, MVVM ne réduira pas beaucoup le code standard car il n'y a pas de liaison automatique. Néanmoins, les ViewModels sont une bonne idée pour créer une logique réutilisable entre les composants UI et core et une meilleure séparation architecturale. Il est recommandé que les ViewModels soient indépendants de la plateforme et du framework afin que nous puissions les réutiliser sur plusieurs plateformes.</p>
+<h2>MVVM en pratique :</h2>
+<p>Imaginez un simple ViewController :</p>
+<pre><code class="language-swift">final class ViewController: NSObject {
+
+  private(set) lazy var view: UIRefreshControl = {
+      let view = UIRefreshControl()
+        view.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        return view
+  }()
+
+  private let loader: ModelLoader
+
+  var onRefresh: (([Model]) -&gt; Void)?
+
+  init(loader: ModelLoader) {
+        self.loader = loader
+  }
+
+  @objc func refresh() {
+        view.beginRefreshing()
+        loader.load { [weak self] result in
+                if let model = try? result.get() {
+                self?.onRefresh?(model)
+            }
+            self?.view.endRefreshing()
+        }
+    }
+}
+</code></pre>
+<p>Nous pouvons voir que le ViewController communique avec le ModelLoader, gère également l'état de chargement du modèle avec la variable <code>onRefresh</code> et crée et configure un UIRefreshControl.</p>
+<p>L'objectif est de déplacer certaines responsabilités du ViewController vers un ViewModel.</p>
+<p>Il existe deux façons courantes de créer un ViewModel, avec état (stateful) et sans état (stateless).</p>
+<h2>Version avec état :</h2>
+<p>Ainsi, le ViewModel peut avoir plusieurs types d'états (chargement, en attente, etc...) et nous notifions l'observateur de tout changement d'état avec une simple closure (<code>onChange</code>).
+Nous définissons également les transitions d'état en définissant la <code>var state</code> dans la méthode <code>loadModel()</code>. Comme l'état est privé, nous exposons des accesseurs pour l'état actuel du ViewModel avec <code>isLoading</code> (un switch est suffisant dans ce cas) et une var calculée pour accéder au modèle, s'il est chargé, nous retournons le modèle sinon nous retournons nil.</p>
+<pre><code class="language-swift">final class ViewModel {
+    private let loader: ModelLoader
+    
+    init(loader: ModelLoader) {
+        self.loader = loader
+    }
+    
+    private enum State {
+        case loading
+        case pending
+        case loaded([Model])
+        case failure
+    }
+    
+    private var state = State.pending {
+        didSet { onChange?(self) }
+    }
+    
+    var onChange: ((ViewModel) -&gt; Void)?
+    
+    var isLoading: Bool {
+        switch state {
+            case .loading: return true
+            case .pending, .loaded, .failure: return false
+        }
+    }
+    
+    var model: [Model]? {
+        switch state {
+        case .loaded(let model):
+            return model
+        case .loading, .pending, .failure:
+            return nil
+        }
+    }
+    
+    func loadModel() {
+        state = .loading
+        loader.load { [weak self] result in
+            if let model = try? result.get() {
+                self?.state = .loaded(model)
+            } else {
+                self?.state = .failed
+            }
+        }
+    }
+}
+</code></pre>
+<p>C'est tout ce dont nous avons besoin dans le ViewModel, mais qu'en est-il du ViewController ?</p>
+<p>Premièrement, nous remplaçons la référence <code>ModelLoader</code> par une propriété <code>viewModel</code>.</p>
+<p>Deuxièmement, dans la fonction <code>refresh</code>, nous définissons le callback <code>onChange</code> pour obtenir un <code>viewModel</code> et sa propriété <code>isLoading</code> pour déterminer si nous devons rafraîchir ou non.</p>
+<p>Troisièmement, nous devons voir si nous avons un modèle dans le ViewModel, et le passer avec la closure <code>onRefresh</code>.</p>
+<p>Et enfin, nous disons au ViewModel de charger le modèle</p>
+<pre><code class="language-swift">final class ViewController: NSObject {
+    private(set) lazy var view: UIRefreshControl = {
+        let view = UIRefreshControl()
+        view.addTarget(self, action: #selector(refresh), for: .valueChanged)
+        return view
+    }()
+
+    private let viewModel: ViewModel
+    
+    var onRefresh: (([Model]) -&gt; Void)?
+    
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
+    
+    @objc func refresh() {
+        viewModel.onChange = { [weak self] viewModel in
+            if viewModel.isLoading {
+                self?.view.beginRefreshing()
+            } else {
+                self?.view.endRefreshing()
+            }
+            
+            if let model = viewModel.model {
+                self?.onRefresh?(model)
+            }
+        }
+        viewModel.loadModel()
+    }
+}
+</code></pre>
+<p>Ainsi, la closure <code>onChange</code> est la logique de liaison entre notre ViewModel et la Vue, se produisant dans le ViewController. Nous pouvons même envelopper la closure dans une fonction <code>binded</code>, de sorte que la Vue soit un UIRefreshControl lié :</p>
+<pre><code class="language-swift">private(set) lazy var view = binded(UIRefreshControl()) 
+
+private func binded(_ view: UIRefreshControl) -&gt; UIRefreshControl {
+      viewModel.onChange = { [weak self] viewModel in
+          if viewModel.isLoading {
+              self?.view.beginRefreshing()
+          } else {
+              self?.view.endRefreshing()
+          }
+
+          if let model = viewModel.model {
+              self?.onRefresh?(model)
+          }
+      }
+      view.addTarget(self, action: #selector(refresh), for: .valueChanged)
+      return view
+}
+</code></pre>
+<p>Remarquez les dernières lignes de code, nous ne définissons pas le <code>viewModel</code> comme une action cible avec la vue. C'est parce que le modèle d'action cible force l'instance à être un NSObject, et se conformer à NSObject est une exigence d'UIKit. Les view models devraient être agnostiques de la plateforme, en faisant du ViewModel une sous-classe de NSObject, nous divulguons des détails d'implémentation juste pour satisfaire UIKit.
+En gardant <code>self</code>, c'est le ViewController qui transmet le message au ViewModel.</p>
+<p>Il y a un autre code suspect, le <code>onRefresh</code> fait référence au Model ! Nous pouvons déplacer cette logique vers le ViewModel, car le ViewController ne fait que passer le <code>model</code>, il ne fait rien avec.</p>
+<pre><code class="language-swift">final class ViewController: NSObject {
+    private(set) lazy var view = binded(UIRefreshControl()) 
+    
+    private let viewModel: ViewModel
+        
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
+    
+    @objc func refresh() {
+        viewModel.loadModel()
+    }
+    
+    private func binded(_ view: UIRefreshControl) -&gt; UIRefreshControl {
+        viewModel.onChange = { [weak self] viewModel in
+            if viewModel.isLoading {
+                self?.view.beginRefreshing()
+            } else {
+                self?.view.endRefreshing()
+            }
+        }
+        view.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    }
+}
+</code></pre>
+<p>Maintenant, notre ViewController ne gère aucun état, il lie la Vue au ViewModel. Toute la gestion de l'état vit maintenant dans une version avec état du ViewModel.</p>
+<p>Nous n'avons pas besoin de conserver l'état du modèle, en le transmettant simplement à la closure <code>onRefresh</code>, nous pouvons nous débarrasser de
+<code>self?.state = .loaded(model)</code>
+Nous devons toujours mettre à jour la Vue, donc le nouvel état est <code>.pending</code>. Nous nous retrouvons donc avec deux états, soit chargement soit en attente.
+Et parce que nous n'avons que deux états, un simple booléen <code>isLoading</code> est suffisant, nous pouvons supprimer l'enum <code>State</code> et la var calculée <code>model</code>.</p>
+<pre><code class="language-swift">final class ViewModel {
+    private let loader: ModelLoader
+    
+    init(loader: ModelLoader) {
+        self.loader = loader
+    }
+    
+    var onChange: ((ViewModel) -&gt; Void)?
+    var onRefresh: (([Model]) -&gt; Void)?
+
+    private(set) var isLoading: Bool = false {
+        didSet { onChange?(self) }
+    }
+    
+    func loadModel() {
+        isLoading = true
+        loader.load { [weak self] result in
+            if let model = try? result.get() {
+                self?.onRefresh?(model)
+            }
+        isLoading = false
+        }
+    }
+}
+</code></pre>
+<p>Transformons le ViewModel en une version sans état.</p>
+<h2>Version sans état :</h2>
+<p>Nous pouvons voir que le ViewModel conserve l'état avec le booléen <code>isLoading</code>, pour obtenir un état transitoire, nous pouvons utiliser une closure observateur pour chaque état.</p>
+<pre><code class="language-swift">final class ViewModel {
+    private let loader: ModelLoader
+    
+    init(loader: ModelLoader) {
+        self.loader = loader
+    }
+  
+    var onRefresh: (([Model]) -&gt; Void)?
+    var onLoadingStateChange: ((Bool) -&gt; Void)?
+        
+    func loadModel() {
+        onLoadingStateChange?(true)
+        loader.load { [weak self] result in
+            if let model = try? result.get() {
+                self?.onRefresh?(model)
+            }
+            onLoadingStateChange?(false)
+        }
+    }
+}
+</code></pre>
+<p>En ayant un <code>onLoadingStateChange</code>, nous pouvons passer la transition d'état dans la closure. Et dans le ViewController, nous avons maintenant ceci :</p>
+<pre><code class="language-swift">final class ViewController: NSObject {
+    private(set) lazy var view = binded(UIRefreshControl()) 
+    
+    private let viewModel: ViewModel
+        
+    init(viewModel: ViewModel) {
+        self.viewModel = viewModel
+    }
+    
+    @objc func refresh() {
+        viewModel.loadModel()
+    }
+    
+    private func binded(_ view: UIRefreshControl) -&gt; UIRefreshControl {
+        viewModel.onLoadingStateChange = { [weak view] isLoading in
+            if isLoading {
+                view?.beginRefreshing()
+            } else {
+                view?.endRefreshing()
+            }
+        }
+        view.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    }
+}
+</code></pre>
+<p>Dans la fonction <code>binded</code>, nous définissons le <code>onLoadingStateChange</code> en passant un booléen, et en affaiblissant la vue, puisque nous n'avons pas besoin d'une référence à self.</p>
+<h2>Bonus : Génériques et typealias</h2>
+<p>Dans le ViewModel, nous pouvons utiliser des Génériques et des typealias, de cette façon nous ne laissons pas de place aux suppositions.</p>
+<pre><code class="language-swift">final class ViewModel {
+    typealias Observer&lt;T&gt; = (T) -&gt; Void
+    
+    private let loader: ModelLoader
+    
+    init(loader: ModelLoader) {
+        self.loader = loader
+    }
+    
+    var onRefresh: Observer&lt;Model&gt;?
+    var onLoadingStateChange: Observer&lt;Bool&gt;?
+        
+    func loadModel() {
+        onLoadingStateChange?(true)
+        loader.load { [weak self] result in
+            if let model = try? result.get() {
+                self?.onRefresh?(model)
+            }
+            onLoadingStateChange?(false)
+        }
+    }
+}
+</code></pre>
+
+  </div>
+</article>
+
+</main>
+<footer>
+  <p>© 2024 - Fais avec Rust</p>
+</footer>
+</body>
+</html>
