@@ -29,21 +29,20 @@ header {
 }
 
 .intro {
-  text-align: center;
+  text-align: justify;
   margin-top: 0;
   margin-bottom: 2rem;
 }
 
 .intro a {
-  color: #61dafb;
+  color: #fff;
   text-decoration: none;
 }
 
 .avatar {
-  max-width: 200px;
-  border-radius: 50%;
+  max-width: 160px;
+  border-radius: 30%;
   margin: 0 auto;
-  display: block;
 }
 
 img {
@@ -114,11 +113,7 @@ code {
 
 .post-content a {
   text-decoration: none;
-  color: #66c2ff;
-}
-
-.post-content a:hover {
-  text-decoration: underline;
+  color: #fff;
 }
 
 .post {
@@ -139,11 +134,6 @@ code {
 
 .post-preview-text {
   padding: 1rem;
-}
-
-.name {
-  font-size: 1.5rem;
-  font-weight: 700;
 }
 
 .post-summary {
@@ -175,12 +165,31 @@ code {
   color: #fff;
 }
 
+.projects ul {
+  list-style: none;
+  padding: 0;
+}
+
 .projects ul li {
-  margin-bottom: 1rem;
+  position: relative;
+  margin-left: 1.5rem;
+}
+
+.projects ul li::before {
+  content: "X";
+  color: #fff;
+  font-size: 1rem;
+  position: absolute;
+  left: -1.5rem;
 }
 
 .projects a {
-  color: #66c2ff;
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #fff000;
   text-decoration: none;
 }
 
@@ -192,6 +201,6 @@ footer {
 }
 
 .footer-link {
-  color: #61dafb;
+  color: #fff;
   text-decoration: none;
 }
