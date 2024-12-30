@@ -56,7 +56,7 @@ There is 3 kind of queues available for in our app :
 
 
 
-##### **The Main dispatch queue**
+### **The Main dispatch queue**
 
 It's created automatically when the app start, it's a serial queue, all the UI updates take place in here and the code involving UI changes are placed.
 As it is heavily used, Apple has provided us the *DispatchQueue.main* to access it.
@@ -87,7 +87,7 @@ DispatchQueue.global().async { // Asynchronous Background thread call
 
 
 
-##### The Global (Background) queues
+### The Global (Background) queues
 
 Global queues are always concurrent and first-in, first-out. Apple have provided 6 different global queues, they differ by the *Quality of service (QoS)* the queue should have.
 
@@ -117,7 +117,7 @@ DispatchQueue.global(qos: .utility).async { [weak self] in
 
 Task refer to any block of code using the `sync` or `async` functions.
 
-##### Private queues
+### Private queues
 
 Finally, we can create our own private( or custom) queue. By default, private queues are *serial*.
 Here is how we can create it : 

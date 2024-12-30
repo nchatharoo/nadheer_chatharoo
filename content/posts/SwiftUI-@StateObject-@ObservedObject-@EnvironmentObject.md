@@ -1,9 +1,9 @@
 ---
-title: "SwiftUI et la gestion d'état"
+title: "SwiftUI: @StateObject, @ObservedObject et @EnvironmentObject"
 image: "/images/cover_stateobject.jpg"
 ---
 
-# @StateObject, @ObservedObject et @EnvironmentObject
+## @StateObject, @ObservedObject et @EnvironmentObject
 
 Alors que faire si nous voulons lier notre vue à un objet de classe ? Nous pouvons utiliser @StateObject, @ObservedObject, ou @EnvironmentObject pour gérer l'état, mais nous devons faire en sorte que notre classe se conforme au protocole ObservableObject. Comme le dit la documentation : Un type d'objet avec un éditeur qui émet avant que l'objet n'ait changé.
 

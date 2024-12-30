@@ -1,9 +1,9 @@
 ---
-title: "SwiftUI et la gestion d'état"
+title: "SwiftUI: @State et @Binding"
 image: "/images/cover_state_binding.jpg"
 ---
 
-# @State et @Binding
+## @State et @Binding
 
 En informatique, la gestion d'état fait référence au processus de surveillance et de maintien de l'état actuel d'un système.
 
@@ -17,13 +17,13 @@ SwiftUI nous permet de résoudre ce genre de problème avec des property wrapper
 
 Considérez ce code :
 
-![](/images/H4lSCxZ1UDlOwCLze2Uo2VawI.jpg)
+![](/images/H4lSCxZ1UDlOwCLze2Uo2VawI.png)
 
 SwiftUI ne peut pas suivre les changements des variables ou structures simples. Elles n'ont pas de mécanisme pour publier leur changement.
 
 Si nous voulons modifier la variable name, nous pouvons utiliser @State, cette propriété redessinera la vue pour afficher la dernière modification de la variable.
 
-![](/images/0A8Xan1gqLKfTJziLWtZKghVlMU.jpg)
+![](/images/0A8Xan1gqLKfTJziLWtZKghVlMU.png)
 
 Avec @State, SwiftUI crée un binding pour cette variable, accessible avec $name (il est décrit dans la documentation comme la valeur projetée). Il est utilisé dans le TextField, pour permettre à l'utilisateur de manipuler la variable. La structure Text utilisera la propriété name, qui est la valeur la plus à jour.
 

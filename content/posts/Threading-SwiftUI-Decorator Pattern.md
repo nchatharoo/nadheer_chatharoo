@@ -3,7 +3,7 @@ title: "Threading dans SwiftUI avec le Pattern Décorateur"
 image: "/images/cover_decorator.jpg"
 ---
 
-# Découplage des détails de threading dans SwiftUI avec le Pattern Décorateur
+## Découplage des détails de threading dans SwiftUI avec le Pattern Décorateur
 
 Dans cet article, nous allons voir comment le Pattern Décorateur peut aider les vues SwiftUI à devenir plus propres et plus centrées sur leur objectif principal en supprimant les détails de threading. Voyons comment cela fonctionne. Le Pattern Décorateur est un modèle de conception structurel qui vous permet d'ajouter une nouvelle fonctionnalité à un objet sans changer sa structure fondamentale. Il implique un ensemble de classes décorateur qui enveloppent des composants concrets. Les classes décorateur reflètent le type des composants qu'elles décorent (elles ont la même interface) mais ajoutent ou remplacent un comportement.
 

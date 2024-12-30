@@ -17,11 +17,6 @@ jobs:
         with:
           profile: minimal
           toolchain: stable
-
-      - name: Adjust paths for GitHub Pages
-        run: |
-          find ./public -name '*.html' -exec sed -i 's|href="/|href="/nadheer_chatharoo/|g' {} +
-          find ./public -name '*.html' -exec sed -i 's|src="/|src="/nadheer_chatharoo/|g' {} +
           
       - name: Build
         run: cargo run --release
