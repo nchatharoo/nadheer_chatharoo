@@ -113,6 +113,13 @@ fn markdown_to_html(md: &str) -> String {
 
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
+    
+    // Correction des chemins d'images après la génération du HTML
+    html_output = html_output.replace(
+        "src=\"images/",
+        "src=\"../images/"
+    );
+    
     html_output
 }
 
