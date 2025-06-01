@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Swiper, SwiperSlide } from "embla-carousel-react";
+import { useEmblaCarousel } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -18,14 +18,14 @@ interface AppGalleryProps {
 
 export default function AppGallery({ screenshots, title }: AppGalleryProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [emblaRef, setEmblaRef] = useState<any>(null);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
 
   const scrollPrev = () => {
-    if (emblaRef) emblaRef.scrollPrev();
+    if (emblaApi) emblaApi.scrollPrev();
   };
 
   const scrollNext = () => {
-    if (emblaRef) emblaRef.scrollNext();
+    if (emblaApi) emblaApi.scrollNext();
   };
 
   return (
@@ -35,43 +35,40 @@ export default function AppGallery({ screenshots, title }: AppGalleryProps) {
       variants={fadeIn()}
       className="relative"
     >
-      <Swiper
-        getRef={(ref) => setEmblaRef(ref)}
-        onSlideChange={(ev) => setActiveIndex(ev.detail.index)}
-        className="w-full"
-        options={{ loop: true }}
-      >
-        {screenshots.map((screenshot, index) => (
-          <SwiperSlide key={index}>
-            <Dialog>
-              <DialogTrigger asChild>
-                <div className="cursor-pointer p-2">
-                  <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-                    <AspectRatio ratio={9/16} className="bg-muted overflow-hidden">
-                      <Image 
-                        src={screenshot} 
-                        alt={`${title} screenshot ${index + 1}`}
-                        fill
-                        className="object-cover transition-transform hover:scale-105 duration-300"
-                      />
-                    </AspectRatio>
-                  </Card>
-                </div>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl p-0 bg-transparent border-none">
-                <div className="relative aspect-[9/16] w-full max-h-[80vh] bg-transparent">
-                  <Image 
-                    src={screenshot} 
-                    alt={`${title} screenshot ${index + 1}`}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
+          {screenshots.map((screenshot, index) => (
+            <div key={index} className="flex-[0_0_100%] min-w-0">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="cursor-pointer p-2">
+                    <Card className="overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                      <AspectRatio ratio={9/16} className="bg-muted overflow-hidden">
+                        <Image 
+                          src={screenshot} 
+                          alt={`${title} screenshot ${index + 1}`}
+                          fill
+                          className="object-cover transition-transform hover:scale-105 duration-300"
+                        />
+                      </AspectRatio>
+                    </Card>
+                  </div>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl p-0 bg-transparent border-none">
+                  <div className="relative aspect-[9/16] w-full max-h-[80vh] bg-transparent">
+                    <Image 
+                      src={screenshot} 
+                      alt={`${title} screenshot ${index + 1}`}
+                      fill
+                      className="object-contain"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="flex justify-center mt-6 gap-2">
         <Button 

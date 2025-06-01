@@ -3,26 +3,24 @@
 import { motion } from "framer-motion";
 import { fadeIn, slideUp, staggerContainer } from "@/lib/animations";
 import { Card, CardContent } from "@/components/ui/card";
-import { LucideIcon } from "lucide-react";
+import { Ear, AudioWaveform as Waveform, Bluetooth, BookOpen, Headphones, Moon, File, Layout, Library } from "lucide-react";
 import { App } from "@/lib/data";
-import dynamic from "next/dynamic";
-
-// Dynamically import icons
-const icons: Record<string, LucideIcon> = {
-  EarIcon: dynamic(() => import("lucide-react").then((mod) => mod.Ear)),
-  WaveformIcon: dynamic(() => import("lucide-react").then((mod) => mod.Waveform)),
-  BluetoothIcon: dynamic(() => import("lucide-react").then((mod) => mod.Bluetooth)),
-  BookOpenIcon: dynamic(() => import("lucide-react").then((mod) => mod.BookOpen)),
-  HeadphonesIcon: dynamic(() => import("lucide-react").then((mod) => mod.Headphones)),
-  MoonIcon: dynamic(() => import("lucide-react").then((mod) => mod.Moon)),
-  FileIcon: dynamic(() => import("lucide-react").then((mod) => mod.File)),
-  LayoutIcon: dynamic(() => import("lucide-react").then((mod) => mod.Layout)),
-  LibraryIcon: dynamic(() => import("lucide-react").then((mod) => mod.Library)),
-};
 
 interface AppFeaturesProps {
   app: App;
 }
+
+const iconMap = {
+  EarIcon: Ear,
+  WaveformIcon: Waveform,
+  BluetoothIcon: Bluetooth,
+  BookOpenIcon: BookOpen,
+  HeadphonesIcon: Headphones,
+  MoonIcon: Moon,
+  FileIcon: File,
+  LayoutIcon: Layout,
+  LibraryIcon: Library,
+};
 
 export default function AppFeatures({ app }: AppFeaturesProps) {
   return (
@@ -42,7 +40,7 @@ export default function AppFeatures({ app }: AppFeaturesProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {app.features.map((feature, index) => {
-          const IconComponent = icons[feature.icon] || icons.FileIcon;
+          const IconComponent = iconMap[feature.icon as keyof typeof iconMap] || File;
           
           return (
             <motion.div
