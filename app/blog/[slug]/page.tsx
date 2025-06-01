@@ -10,9 +10,11 @@ export async function generateStaticParams() {
 }
 
 export default async function BlogPostPage({ 
-  params 
+  params,
+  searchParams 
 }: { 
-  params: { slug: string } 
+  params: { slug: string };
+  searchParams: Record<string, string | string[] | undefined>;
 }) {
   // Get post data on the server
   const post = await getPostBySlug(params.slug);
