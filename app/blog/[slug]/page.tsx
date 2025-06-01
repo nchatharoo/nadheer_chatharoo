@@ -9,11 +9,11 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function BlogPostPage({
-  params
-}: {
+interface PageProps {
   params: { slug: string }
-}) {
+}
+
+export default async function BlogPostPage({ params }: PageProps) {
   // Get post data on the server
   const post = await getPostBySlug(params.slug);
   
