@@ -9,9 +9,9 @@ export async function generateStaticParams() {
   }));
 }
 
-interface PageProps {
-  params: { slug: string }
-}
+type PageProps = {
+  params: { slug: string };
+};
 
 export default async function BlogPostPage({ params }: PageProps) {
   // Get post data on the server

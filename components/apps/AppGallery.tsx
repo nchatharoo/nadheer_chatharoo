@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useEmblaCarousel } from "embla-carousel-react";
+import useEmblaCarousel from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
