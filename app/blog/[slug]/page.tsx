@@ -9,13 +9,12 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function BlogPostPage({ 
-  params,
-  searchParams 
-}: { 
+interface PageProps {
   params: { slug: string };
   searchParams: Record<string, string | string[] | undefined>;
-}) {
+}
+
+export default async function BlogPostPage({ params, searchParams }: PageProps) {
   // Get post data on the server
   const post = await getPostBySlug(params.slug);
   
